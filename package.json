@@ -1,6 +1,9 @@
 {
   "name": "cha-app",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "build": "pnpm --filter frontend build",
@@ -8,4 +11,3 @@
     "dev": "pnpm --parallel -r dev"
   }
 }
-
