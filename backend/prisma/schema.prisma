@@ -1,0 +1,178 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Store {
+  id        String   @id @default(cuid())
+  name      String
+  address   String
+  latitude  Float
+  longitude Float
+  phone     String?
+  imageUrl  String?
+  status    String   @default("open")
+  openTime  String   @default("10:00")
+  closeTime String   @default("22:00")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders        Order[]
+  storeProducts StoreProduct[]
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  name      String
+  sortOrder Int      @default(0)
+  imageUrl  String?
+  createdAt DateTime @default(now())
+
+  products Product[]
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  imageUrl    String?
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  isNew       Boolean  @default(false)
+  isLimited   Boolean  @default(false)
+  status      String   @default("active")
+  salesCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  productOptions ProductOption[]
+  orderItems     OrderItem[]
+  storeProducts  StoreProduct[]
+}
+
+model StoreProduct {
+  id        String  @id @default(cuid())
+  storeId   String
+  store     Store   @relation(fields: [storeId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  price     Float?
+  inStock   Boolean @default(true)
+
+  @@unique([storeId, productId])
+}
+
+model ProductOption {
+  id        String   @id @default(cuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  type      String
+  name      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  choices OptionChoice[]
+}
+
+model OptionChoice {
+  id              String        @id @default(cuid())
+  productOptionId String
+  productOption   ProductOption @relation(fields: [productOptionId], references: [id])
+  label           String
+  priceAdjust     Float         @default(0)
+  sortOrder       Int           @default(0)
+  isDefault       Boolean       @default(false)
+}
+
+model User {
+  id         String    @id @default(cuid())
+  phone      String    @unique
+  nickname   String?
+  avatarUrl  String?
+  gender     String?
+  birthday   DateTime?
+  points     Int       @default(0)
+  level      String    @default("bronze")
+  totalSpent Float     @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  orders    Order[]
+  coupons   UserCoupon[]
+  pointsLog PointsLog[]
+}
+
+model Coupon {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  type        String
+  value       Float
+  minSpend    Float    @default(0)
+  validFrom   DateTime
+  validTo     DateTime
+  createdAt   DateTime @default(now())
+
+  userCoupons UserCoupon[]
+}
+
+model UserCoupon {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  couponId  String
+  coupon    Coupon    @relation(fields: [couponId], references: [id])
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@unique([userId, couponId])
+}
+
+model Order {
+  id            String    @id @default(cuid())
+  orderNo       String    @unique
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  storeId       String
+  store         Store     @relation(fields: [storeId], references: [id])
+  status        String    @default("pending")
+  totalAmount   Float
+  discount      Float     @default(0)
+  finalAmount   Float
+  paymentMethod String?
+  pickupTime    DateTime?
+  pickupCode    String?
+  remark        String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  items OrderItem[]
+}
+
+model OrderItem {
+  id             String   @id @default(cuid())
+  orderId        String
+  order          Order    @relation(fields: [orderId], references: [id])
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id])
+  quantity       Int      @default(1)
+  unitPrice      Float
+  subtotal       Float
+  customizations String?
+  createdAt      DateTime @default(now())
+}
+
+model PointsLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  points    Int
+  type      String
+  reason    String
+  createdAt DateTime @default(now())
+}

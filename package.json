@@ -1,0 +1,10 @@
+{
+  "name": "cha-app",
+  "private": true,
+  "scripts": {
+    "build": "pnpm --filter frontend build",
+    "start": "cd backend && node src/index.js",
+    "dev": "pnpm --parallel -r dev"
+  }
+}
+
